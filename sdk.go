@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
@@ -88,13 +89,7 @@ func NewClient(hostURL string, keyOrBasicAuth string) (*Client, error) {
 func (c *Client) SetDashboard(ctx context.Context, db *GrafanaDashboard) (*GrafanaResponse, error) {
 	u, _ := url.Parse(c.baseURL)
 	u.Path = path.Join(u.Path, "api/dashboards/db")
-	var resp *resty.Response
-	var err error
-	if c.isBasicAuth {
-		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).SetBody(db).Post(u.String())
-	} else {
-		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).SetBody(db).Post(u.String())
-	}
+	resp, err := c.do(ctx, http.MethodPost, u.String(), db)
 	if err != nil {
 		return nil, err
 	}
@@ -106,16 +101,11 @@ func (c *Client) SetDashboard(ctx context.Context, db *GrafanaDashboard) (*Grafa
 	return gResp, nil
 }
 
+// DeleteDashboardByUID will delete the grafana dashboard with the given uid
 func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*GrafanaResponse, error) {
 	u, _ := url.Parse(c.baseURL)
 	u.Path = path.Join(u.Path, fmt.Sprintf("api/dashboards/uid/%v", uid))
-	var resp *resty.Response
-	var err error
-	if c.isBasicAuth {
-		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).Delete(u.String())
-	} else {
-		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).Delete(u.String())
-	}
+	resp, err := c.do(ctx, http.MethodDelete, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -132,17 +122,10 @@ func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*Grafana
 func (c *Client) GetCurrentOrg(ctx context.Context) (*Org, error) {
 	u, _ := url.Parse(c.baseURL)
 	u.Path = path.Join(u.Path, "api/org/")
-	var resp *resty.Response
-	var err error
-	if c.isBasicAuth {
-		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).Get(u.String())
-	} else {
-		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).Get(u.String())
-	}
+	resp, err := c.do(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
 	org := &Org{}
 	err = json.Unmarshal(resp.Body(), org)
 	if err != nil {
@@ -151,16 +134,11 @@ func (c *Client) GetCurrentOrg(ctx context.Context) (*Org, error) {
 	return org, nil
 }
 
+// GetHealth returns the current health status
 func (c *Client) GetHealth(ctx context.Context) (*HealthResponse, error) {
 	u, _ := url.Parse(c.baseURL)
 	u.Path = path.Join(u.Path, "api/health")
-	var resp *resty.Response
-	var err error
-	if c.isBasicAuth {
-		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).Get(u.String())
-	} else {
-		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).Get(u.String())
-	}
+	resp, err := c.do(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +149,34 @@ func (c *Client) GetHealth(ctx context.Context) (*HealthResponse, error) {
 		return nil, err
 	}
 	return health, nil
+}
+
+func (c *Client) do(ctx context.Context, method string, url string, body interface{}) (*resty.Response, error) {
+	req := c.client.R().SetContext(ctx).SetBody(body)
+	if c.isBasicAuth {
+		req = req.SetBasicAuth(c.username, c.password)
+	} else {
+		req = req.SetAuthToken(c.key)
+	}
+
+	var resp *resty.Response
+	var err error
+	switch method {
+	case http.MethodGet:
+		resp, err = req.Get(url)
+	case http.MethodPost:
+		resp, err = req.Post(url)
+	case http.MethodDelete:
+		resp, err = req.Delete(url)
+	case http.MethodPut:
+		resp, err = req.Put(url)
+	default:
+		return nil, errors.New("unsupported http method")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func ReplaceDatasource(model []byte, ds string) ([]byte, error) {
