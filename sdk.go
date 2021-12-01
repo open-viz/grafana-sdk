@@ -36,6 +36,7 @@ type GrafanaResponse struct {
 	UID     *string `json:"uid,omitempty"`
 	URL     *string `json:"url,omitempty"`
 	Title   *string `json:"title,omitempty"`
+	Name    *string `json:"name,omitempty"`
 	Message *string `json:"message,omitempty"`
 	Status  *string `json:"status,omitempty"`
 	Version *int    `json:"version,omitempty"`
@@ -51,6 +52,26 @@ type HealthResponse struct {
 	Commit   string `json:"commit,omitempty"`
 	Database string `json:"database,omitempty"`
 	Version  string `json:"version,omitempty"`
+}
+
+// Datasource as described in the doc
+// http://docs.grafana.org/reference/http_api/#get-all-datasources
+type Datasource struct {
+	ID                uint        `json:"id"`
+	OrgID             uint        `json:"orgId"`
+	Name              string      `json:"name"`
+	Type              string      `json:"type"`
+	Access            string      `json:"access"` // direct or proxy
+	URL               string      `json:"url"`
+	Password          *string     `json:"password,omitempty"`
+	User              *string     `json:"user,omitempty"`
+	Database          *string     `json:"database,omitempty"`
+	BasicAuth         *bool       `json:"basicAuth,omitempty"`
+	BasicAuthUser     *string     `json:"basicAuthUser,omitempty"`
+	BasicAuthPassword *string     `json:"basicAuthPassword,omitempty"`
+	IsDefault         bool        `json:"isDefault"`
+	JSONData          interface{} `json:"jsonData"`
+	SecureJSONData    interface{} `json:"secureJsonData"`
 }
 
 // NewClient initializes client for interacting with an instance of Grafana server;
@@ -177,6 +198,51 @@ func (c *Client) do(ctx context.Context, method string, url string, body interfa
 		return nil, err
 	}
 	return resp, nil
+}
+
+func (c *Client) CreateDatasource(ctx context.Context, ds *Datasource) (*GrafanaResponse, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = path.Join(u.Path, "api/datasources")
+	resp, err := c.do(ctx, http.MethodPost, u.String(), ds)
+	if err != nil {
+		return nil, err
+	}
+	gResp := &GrafanaResponse{}
+	err = json.Unmarshal(resp.Body(), gResp)
+	if err != nil {
+		return nil, err
+	}
+	return gResp, nil
+}
+
+func (c *Client) UpdateDatasource(ctx context.Context, ds Datasource) (*GrafanaResponse, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = path.Join(u.Path, fmt.Sprintf("api/datasources/%v", ds.ID))
+	resp, err := c.do(ctx, http.MethodPut, u.String(), ds)
+	if err != nil {
+		return nil, err
+	}
+	gResp := &GrafanaResponse{}
+	err = json.Unmarshal(resp.Body(), gResp)
+	if err != nil {
+		return nil, err
+	}
+	return gResp, nil
+}
+
+func (c *Client) DeleteDatasource(ctx context.Context, id int) (*GrafanaResponse, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = path.Join(u.Path, fmt.Sprintf("api/datasources/%v", id))
+	resp, err := c.do(ctx, http.MethodDelete, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	gResp := &GrafanaResponse{}
+	err = json.Unmarshal(resp.Body(), gResp)
+	if err != nil {
+		return nil, err
+	}
+	return gResp, nil
 }
 
 func ReplaceDatasource(model []byte, ds string) ([]byte, error) {
