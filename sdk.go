@@ -1,4 +1,4 @@
-package sdk
+package grafana_sdk
 
 import (
 	"context"
@@ -39,6 +39,11 @@ type GrafanaResponse struct {
 	Status  *string `json:"status,omitempty"`
 	Version *int    `json:"version,omitempty"`
 	Slug    *string `json:"slug,omitempty"`
+}
+
+type Org struct {
+	ID   *int    `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // NewClient initializes client for interacting with an instance of Grafana server;
@@ -114,6 +119,30 @@ func (c *Client) DeleteDashboardByUID(ctx context.Context, uid string) (*Grafana
 		return nil, err
 	}
 	return gResp, nil
+}
+
+// GetCurrentOrg gets current organization.
+// It reflects GET /api/org/ API call.
+func (c *Client) GetCurrentOrg(ctx context.Context) (*Org, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = path.Join(u.Path, "api/org/")
+	var resp *resty.Response
+	var err error
+	if c.isBasicAuth {
+		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).Get(u.String())
+	} else {
+		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).Get(u.String())
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	org := &Org{}
+	err = json.Unmarshal(resp.Body(), org)
+	if err != nil {
+		return nil, err
+	}
+	return org, nil
 }
 
 func ReplaceDatasource(model []byte, ds string) ([]byte, error) {
