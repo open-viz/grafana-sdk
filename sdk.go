@@ -46,6 +46,12 @@ type Org struct {
 	Name *string `json:"name,omitempty"`
 }
 
+type HealthResponse struct {
+	Commit   string `json:"commit,omitempty"`
+	Database string `json:"database,omitempty"`
+	Version  string `json:"version,omitempty"`
+}
+
 // NewClient initializes client for interacting with an instance of Grafana server;
 // apiKeyOrBasicAuth accepts either 'username:password' basic authentication credentials,
 // or a Grafana API key. If it is an empty string then no authentication is used.
@@ -143,6 +149,28 @@ func (c *Client) GetCurrentOrg(ctx context.Context) (*Org, error) {
 		return nil, err
 	}
 	return org, nil
+}
+
+func (c *Client) GetHealth(ctx context.Context) (*HealthResponse, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = path.Join(u.Path, "api/health")
+	var resp *resty.Response
+	var err error
+	if c.isBasicAuth {
+		resp, err = c.client.R().SetContext(ctx).SetBasicAuth(c.username, c.password).Get(u.String())
+	} else {
+		resp, err = c.client.R().SetContext(ctx).SetAuthToken(c.key).Get(u.String())
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	health := &HealthResponse{}
+	err = json.Unmarshal(resp.Body(), health)
+	if err != nil {
+		return nil, err
+	}
+	return health, nil
 }
 
 func ReplaceDatasource(model []byte, ds string) ([]byte, error) {
