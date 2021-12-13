@@ -1,0 +1,10 @@
+./ast.go
+./ast_notypeparams.go
+./commentmap.go
+./filter.go
+./import.go
+./print.go
+./resolve.go
+./scope.go
+./walk.go
+./walk_notypeparams.go

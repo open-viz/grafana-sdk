@@ -19,6 +19,15 @@ github.com/modern-go/reflect2
 # golang.org/x/net v0.0.0-20211029224645-99673261e6eb
 ## explicit; go 1.17
 golang.org/x/net/publicsuffix
+# gomodules.xyz/password-generator v0.2.7
+## explicit; go 1.15
+gomodules.xyz/password-generator
+# gomodules.xyz/pointer v0.1.0
+## explicit; go 1.15
+gomodules.xyz/pointer
+# gomodules.xyz/x v0.0.10
+## explicit; go 1.17
+gomodules.xyz/x/crypto/rand
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
