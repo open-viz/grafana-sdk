@@ -12,9 +12,6 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
-# ide directory
-.idea
-bin
-.go
+.idea/
