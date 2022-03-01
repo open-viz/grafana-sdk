@@ -100,7 +100,6 @@ func TestClient_CreateDatasource(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestClient_UpdateDatasource(t *testing.T) {
