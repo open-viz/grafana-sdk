@@ -31,17 +31,28 @@ import (
 
 const (
 	GrafanaTestServerURL = "http://localhost:3000/"
-	GrafanaBasicAuth     = "admin:admin"
+)
+
+var (
+	validAuth = &AuthConfig{
+		BasicAuth: &BasicAuth{
+			Username: "admin",
+			Password: "admin",
+		},
+	}
+	invalidAuth = &AuthConfig{
+		BasicAuth: &BasicAuth{
+			Username: "admin",
+			Password: "wrong-pass",
+		},
+	}
 )
 
 func TestClient_CreateDatasource(t *testing.T) {
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -57,11 +68,9 @@ func TestClient_CreateDatasource(t *testing.T) {
 		{
 			name: "Create Datasource",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -79,12 +88,9 @@ func TestClient_CreateDatasource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			got, err := c.CreateDatasource(tt.args.ctx, tt.args.ds)
 			if (err != nil) != tt.wantErr {
@@ -113,12 +119,9 @@ func TestClient_UpdateDatasource(t *testing.T) {
 		_ = deleteDS(pointer.Int(ds.ID))
 	}()
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -134,11 +137,9 @@ func TestClient_UpdateDatasource(t *testing.T) {
 		{
 			name: "Test Update Datasource",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: nil,
@@ -157,12 +158,9 @@ func TestClient_UpdateDatasource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			got, err := c.UpdateDatasource(tt.args.ctx, tt.args.ds)
 			if (err != nil) != tt.wantErr {
@@ -187,12 +185,9 @@ func TestClient_DeleteDatasource(t *testing.T) {
 		_ = deleteDS(pointer.Int(ds.ID))
 	}()
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -208,11 +203,9 @@ func TestClient_DeleteDatasource(t *testing.T) {
 		{
 			name: "Delete Datasource",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -223,11 +216,9 @@ func TestClient_DeleteDatasource(t *testing.T) {
 		{
 			name: "Delete Datasource with same id",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -239,12 +230,9 @@ func TestClient_DeleteDatasource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			got, err := c.DeleteDatasource(tt.args.ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
@@ -262,12 +250,9 @@ func TestClient_DeleteDatasource(t *testing.T) {
 
 func TestClient_GetCurrentOrg(t *testing.T) {
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -282,11 +267,9 @@ func TestClient_GetCurrentOrg(t *testing.T) {
 		{
 			name: "Get CurrentOrg",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -300,11 +283,9 @@ func TestClient_GetCurrentOrg(t *testing.T) {
 		{
 			name: "Get CurrentOrg with invalid auth",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "wrong-password",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    invalidAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -316,12 +297,9 @@ func TestClient_GetCurrentOrg(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			got, err := c.GetCurrentOrg(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
@@ -337,12 +315,9 @@ func TestClient_GetCurrentOrg(t *testing.T) {
 
 func TestClient_GetHealth(t *testing.T) {
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -357,11 +332,9 @@ func TestClient_GetHealth(t *testing.T) {
 		{
 			name: "Test Get Health API",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -383,12 +356,9 @@ func TestClient_GetHealth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			got, err := c.GetHealth(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
@@ -404,12 +374,9 @@ func TestClient_GetHealth(t *testing.T) {
 
 func TestClient_SetDashboard(t *testing.T) {
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -424,11 +391,9 @@ func TestClient_SetDashboard(t *testing.T) {
 		{
 			name: "Test Set Dashboard by creating new dashboard",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -440,12 +405,9 @@ func TestClient_SetDashboard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			model, err := ioutil.ReadFile(tt.jsonFilePath)
 			if err != nil {
@@ -476,12 +438,9 @@ func TestClient_DeleteDashboardByUID(t *testing.T) {
 		return
 	}
 	type fields struct {
-		baseURL     string
-		key         string
-		isBasicAuth bool
-		username    string
-		password    string
-		client      *resty.Client
+		baseURL string
+		auth    *AuthConfig
+		client  *resty.Client
 	}
 	type args struct {
 		ctx context.Context
@@ -497,11 +456,9 @@ func TestClient_DeleteDashboardByUID(t *testing.T) {
 		{
 			name: "Delete Dashboard",
 			fields: fields{
-				baseURL:     GrafanaTestServerURL,
-				isBasicAuth: true,
-				username:    "admin",
-				password:    "admin",
-				client:      resty.New(),
+				baseURL: GrafanaTestServerURL,
+				auth:    validAuth,
+				client:  resty.New(),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -514,12 +471,9 @@ func TestClient_DeleteDashboardByUID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Client{
-				baseURL:     tt.fields.baseURL,
-				key:         tt.fields.key,
-				isBasicAuth: tt.fields.isBasicAuth,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
+				baseURL: tt.fields.baseURL,
+				auth:    tt.fields.auth,
+				client:  tt.fields.client,
 			}
 			_, err := c.DeleteDashboardByUID(tt.args.ctx, tt.args.uid)
 			if (err != nil) != tt.wantErr {
@@ -531,7 +485,7 @@ func TestClient_DeleteDashboardByUID(t *testing.T) {
 }
 
 func createDS(name string) (*GrafanaResponse, error) {
-	client, err := NewClient(GrafanaTestServerURL, GrafanaBasicAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth)
 	if err != nil {
 		return nil, err
 	}
@@ -550,7 +504,7 @@ func createDS(name string) (*GrafanaResponse, error) {
 }
 
 func deleteDS(id int) error {
-	client, err := NewClient(GrafanaTestServerURL, GrafanaBasicAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth)
 	if err != nil {
 		return err
 	}
@@ -559,7 +513,7 @@ func deleteDS(id int) error {
 }
 
 func createDB(dbFilePath string) (*GrafanaResponse, error) {
-	client, err := NewClient(GrafanaTestServerURL, GrafanaBasicAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth)
 	if err != nil {
 		return nil, err
 	}
