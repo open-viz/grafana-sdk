@@ -19,7 +19,7 @@ package grafana_sdk
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -409,7 +409,7 @@ func TestClient_SetDashboard(t *testing.T) {
 				auth:    tt.fields.auth,
 				client:  tt.fields.client,
 			}
-			model, err := ioutil.ReadFile(tt.jsonFilePath)
+			model, err := os.ReadFile(tt.jsonFilePath)
 			if err != nil {
 				t.Errorf("failed to read json model, reason: %v", err)
 				return
@@ -517,7 +517,7 @@ func createDB(dbFilePath string) (*GrafanaResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	model, err := ioutil.ReadFile(dbFilePath)
+	model, err := os.ReadFile(dbFilePath)
 	if err != nil {
 		return nil, err
 	}
