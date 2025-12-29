@@ -485,7 +485,7 @@ func TestClient_DeleteDashboardByUID(t *testing.T) {
 }
 
 func createDS(name string) (*GrafanaResponse, error) {
-	client, err := NewClient(GrafanaTestServerURL, validAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +504,7 @@ func createDS(name string) (*GrafanaResponse, error) {
 }
 
 func deleteDS(id int) error {
-	client, err := NewClient(GrafanaTestServerURL, validAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth, nil)
 	if err != nil {
 		return err
 	}
@@ -513,7 +513,7 @@ func deleteDS(id int) error {
 }
 
 func createDB(dbFilePath string) (*GrafanaResponse, error) {
-	client, err := NewClient(GrafanaTestServerURL, validAuth)
+	client, err := NewClient(GrafanaTestServerURL, validAuth, nil)
 	if err != nil {
 		return nil, err
 	}
